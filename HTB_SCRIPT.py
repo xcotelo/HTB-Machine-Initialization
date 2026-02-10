@@ -1,56 +1,52 @@
 import os
+import pwd
 import subprocess
-import signal
 import sys
 import time
-
-# Variable global para la IP
+import getpass
+import glob
 ip = ""
 
-def cleanup(signum, frame):
-    print("\n\n⏹️  Limpiando configuración...")
-    
-    # Limpiar la entrada específica de /etc/hosts
+print("""
+\033[1;32m╔══════════════════════════════════════════════════════════════╗
+║                                                              ║
+║   ██╗  ██╗████████╗██████╗     ███╗   ███╗██╗████████╗       ║
+║   ██║  ██║╚══██╔══╝██╔══██╗    ████╗ ████║██║╚══██╔══╝       ║
+║   ███████║   ██║   ██████╔╝    ██╔████╔██║██║   ██║          ║
+║   ██╔══██║   ██║   ██╔══██╗    ██║╚██╔╝██║██║   ██║          ║
+║   ██║  ██║   ██║   ██████╔╝    ██║ ╚═╝ ██║██║   ██║          ║
+║   ╚═╝  ╚═╝   ╚═╝   ╚═════╝     ╚═╝     ╚═╝╚═╝   ╚═╝          ║
+║                                                              ║
+║                                                              ║
+║   \033[1;33m	  Hack The Box – Machine Initialization Tool\033[1;32m           ║
+║                                                              ║
+║                       \033[1;35mby @xcotelo\033[1;32m                            ║
+║                                                              ║
+╚══════════════════════════════════════════════════════════════╝\033[0m
+""")
+
+print("\033[1;33m⚠  IMPORTANT: Press Ctrl+C to terminate VPN connection and clean /etc/hosts\033[0m\n")
+
+def limpiar_hosts():    
     try:
-        # Leer todo el contenido
-        with open("/etc/hosts", "r") as f:
-            content = f.read()
-        
-        # Remover la(s) línea(s) que contienen la IP
-        lines = content.split('\n')
-        new_lines = [line for line in lines if ip not in line]
-        
-        # Escribir de vuelta sin la(s) línea(s) de nuestra IP
-        with open("/etc/hosts", "w") as f:
-            f.write('\n'.join(new_lines))
-        
-        print(f"✓ Entrada de {ip} removida de /etc/hosts")
+        subprocess.run(["sudo", "sed", "-i", f"/{ip}/d", "/etc/hosts"], check=True)        
+        print(f"✓ Entry {ip} removed from /etc/hosts")
     except Exception as e:
-        print(f"✗ Error limpiando /etc/hosts: {e}")
-    
-    print("¡Hasta luego! 🚀")
+        print(f"✗ Error cleaning /etc/hosts: {e}")
     sys.exit(0)
 
-# Registrar el manejador de señales
-signal.signal(signal.SIGINT, cleanup)
-
-# Pedir datos al usuario
 try:
-    ip = input("Introduce la IP de la máquina de HTB: ").strip()
-    nombre = input("Introduce un nombre para la máquina (ej: maquina.htb): ").strip()
+    ip = input("Enter the HTB machine IP: ").strip()
+    nombre = input("Enter a name for the machine (e.g. machine.htb): ").strip()
+
 except KeyboardInterrupt:
-    cleanup(signal.SIGINT, None)
+    sys.exit(0)
 
-# Quitar la extensión .htb para la carpeta
 nombre_carpeta = nombre.replace(".htb", "")
+usuario = os.getenv("SUDO_USER") or getpass.getuser()
+ruta_base = (f"/home/{usuario}/HTB_{nombre_carpeta}")
 
-# Ruta base donde se creará la carpeta "HTB_nombre"
-ruta_base = os.path.expanduser(f"/home/USER/HTB_{nombre_carpeta}")
-
-# Subcarpetas a crear dentro de "HTB"
 subcarpetas = ["nmap", "exploit", "varios"]
-
-# Crear carpeta principal
 os.makedirs(ruta_base, exist_ok=True)
 
 # Crear subcarpetas dentro de "HTB"
@@ -58,39 +54,55 @@ for carpeta in subcarpetas:
     ruta_sub = os.path.join(ruta_base, carpeta)
     os.makedirs(ruta_sub, exist_ok=True)
 
-# Crear entrada en /etc/hosts (requiere permisos de sudo)
+# Permisos de usuario a carpeta base y subcarpetas
+uid_usuario = pwd.getpwnam(usuario).pw_uid
+gid_usuario = pwd.getpwnam(usuario).pw_gid
+
+os.chown(ruta_base, uid_usuario, gid_usuario)
+for carpeta in subcarpetas:
+    ruta_sub = os.path.join(ruta_base, carpeta)
+    os.chown(ruta_sub, uid_usuario, gid_usuario)
+
+# Crear entrada en /etc/hosts
 try:
     entrada = f"{ip} {nombre}\n"
     subprocess.run(["sudo", "bash", "-c", f"echo '{entrada}' >> /etc/hosts"], check=True)
-    print("✓ Entrada añadida a /etc/hosts")
 except subprocess.CalledProcessError as e:
-    print(f"✗ Error añadiendo a /etc/hosts: {e}")
+    print(f"✗ Error adding entry to /etc/hosts: {e}")
 
-print(f"✓ Configuración completada. Carpeta creada en {ruta_base}")
-print("\n💡 Presiona Ctrl+C para detener la VPN y limpiar automáticamente")
-
-# Iniciar conexión VPN
-print("Iniciando conexión VPN...")
 try:
-    # Usar Popen y esperar manualmente para capturar Ctrl+C
-    process = subprocess.Popen(["sudo", "openvpn", "PONER NOMBRE ARCHIVO VPN"])
-    
-    # Esperar de forma que podamos capturar Ctrl+C
-    while process.poll() is None:
-        time.sleep(0.5)  # Pequeña pausa para verificar estado
-        
+	# Busco por los archivos .ovpn
+	ovpn_files = glob.glob("*.ovpn")
+	
+	if not ovpn_files:
+		print("There are no .ovpn files")
+		print("Exiting...")
+		sys.exit(1)
+	else:
+		contador = 1
+		for archivo in ovpn_files:
+			print(f"{contador}. {archivo}")
+			contador += 1
+			
+	if len(ovpn_files) == 1:
+		archivo_ovpn = ovpn_files[0]
+		procesoVPN = subprocess.Popen(["sudo", "openvpn", archivo_ovpn])
+	else:
+		numero = int(input("Which .ovpn file do you want to run? (Type number): ").strip())		
+		archivo_ovpn = ovpn_files[numero -1]
+		# Usar Popen y esperar manualmente para capturar Ctrl+C
+		procesoVPN = subprocess.Popen(["sudo", "openvpn", archivo_ovpn])
+
 except KeyboardInterrupt:
-    print("\n🛑 Capturando Ctrl+C...")
-    
+    print("\nCtrl+C detected. Closing VPN...")
+
 finally:
-    # Siempre limpiar al salir, sin importar cómo terminemos
-    if 'process' in locals() and process.poll() is None:
-        print("Deteniendo proceso VPN...")
-        process.terminate()
+    if 'procesoVPN' in locals() and procesoVPN.poll() is None:
+        print("Stopping VPN process...")
+        procesoVPN.terminate()
         try:
-            process.wait(timeout=5)
+            procesoVPN.wait(timeout=5)
         except subprocess.TimeoutExpired:
-            print("Forzando cierre de VPN...")
-            process.kill()
-    
-    cleanup(signal.SIGINT, None)
+            procesoVPN.kill()
+
+    limpiar_hosts()
