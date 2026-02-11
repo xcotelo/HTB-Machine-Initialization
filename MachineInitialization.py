@@ -46,22 +46,25 @@ nombre_carpeta = nombre.replace(".htb", "")
 usuario = os.getenv("SUDO_USER") or getpass.getuser()
 ruta_base = (f"/home/{usuario}/HTB_{nombre_carpeta}")
 
-subcarpetas = ["nmap", "exploit", "varios"]
-os.makedirs(ruta_base, exist_ok=True)
+if os.path.exists(ruta_base):
+	print("The directory {ruta_base} already exists.)
+else:
+	subcarpetas = ["nmap", "exploit", "varios"]
+	os.makedirs(ruta_base, exist_ok=True)
 
-# Crear subcarpetas dentro de "HTB"
-for carpeta in subcarpetas:
-    ruta_sub = os.path.join(ruta_base, carpeta)
-    os.makedirs(ruta_sub, exist_ok=True)
+	# Crear subcarpetas dentro de "HTB"
+	for carpeta in subcarpetas:
+    		ruta_sub = os.path.join(ruta_base, carpeta)
+    		os.makedirs(ruta_sub, exist_ok=True)
 
-# Permisos de usuario a carpeta base y subcarpetas
-uid_usuario = pwd.getpwnam(usuario).pw_uid
-gid_usuario = pwd.getpwnam(usuario).pw_gid
+	# Permisos de usuario a carpeta base y subcarpetas
+	uid_usuario = pwd.getpwnam(usuario).pw_uid
+	gid_usuario = pwd.getpwnam(usuario).pw_gid
 
-os.chown(ruta_base, uid_usuario, gid_usuario)
-for carpeta in subcarpetas:
-    ruta_sub = os.path.join(ruta_base, carpeta)
-    os.chown(ruta_sub, uid_usuario, gid_usuario)
+	os.chown(ruta_base, uid_usuario, gid_usuario)
+	for carpeta in subcarpetas:
+		ruta_sub = os.path.join(ruta_base, carpeta)
+		os.chown(ruta_sub, uid_usuario, gid_usuario)
 
 # Crear entrada en /etc/hosts
 try:
