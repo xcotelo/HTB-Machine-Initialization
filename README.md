@@ -1,74 +1,23 @@
-# HTB Machine Setup Script
+# HTB Machine Initialization
 
-Pequeño script en Python para automatizar la preparación de una máquina de laboratorio (p. ej. HackTheBox).
-Crea estructura de carpetas, añade la entrada en `/etc/hosts` y lanza una VPN. Al presionar `Ctrl+C` el script intenta limpiar la configuración (elimina la entrada añadida en `/etc/hosts`).
-
----
-
-
-## Requisitos
-
-* Python 3.x
-* `sudo` para:
-  * modificar `/etc/hosts`
-  * ejecutar `openvpn`
-* `openvpn` instalado y el archivo de configuración `archivoHTB.ovpn` disponible en el directorio desde el que ejecutes el script (o ajusta la ruta en el script).
-* Permisos para crear carpetas en `/home/USER` (el script usa rutas hardcodeadas).
+A small Python script to automate the setup of a lab machine (e.g., HackTheBox).
+It creates a folder structure, adds the entry to `/etc/hosts`, and launches a VPN. Pressing `Ctrl+C` removes the added entry from `/etc/hosts`.
 
 ---
 
-## Uso
+## Usage
 
-Ejecuta desde terminal:
+The script will ask for:
 
-```bash
-python3 setup_htb.py
-```
+* The machine's IP address (e.g., `10.10.10.5`)
+* The machine's name (e.g., `machine.htb`)
 
-El script pedirá:
+What it does automatically:
 
-* IP de la máquina (ej. `10.10.10.5`)
-* Nombre de la máquina (ej. `maquina.htb`)
+* Creates `/home/USER/HTB_<name_without_.htb>` with subfolders `nmap`, `exploit`, and `various`.
+* Adds the line `IP name` to `/etc/hosts`.
+* Runs `sudo openvpn HTBfile.ovpn`.
+* If you press `Ctrl+C`:
 
-Qué hace automáticamente:
-
-* Crea `/home/USER/HTB_<nombre_sin_.htb>` con subcarpetas `nmap`, `exploit`, `varios`.
-* Añade la línea `IP nombre` a `/etc/hosts`.
-* Lanza `sudo openvpn archivoHTB.ovpn` y se queda esperando.
-* Si presionas `Ctrl+C`, intenta:
-
-  * Detener la VPN.
-  * Eliminar la entrada añadida en `/etc/hosts`.
-
----
-
-## Advertencias / Seguridad
-
-* ⚠️ **Modifica `/etc/hosts`**: el script añade y elimina líneas en `/etc/hosts`. Revisa siempre el contenido del archivo antes de ejecutar.
-* ⚠️ **Rutas hardcodeadas**: `/home/USER/...` y `archivoHTB.ovpn` están fijadas en el script. Cámbialas según tu usuario y estructura.
-* ⚠️ **Ejecución con sudo**: el script invoca `sudo` para acciones privilegiadas; se te solicitará contraseña si corresponde.
-* El limpiador elimina las líneas que contienen la IP indicada; si el mismo IP aparece para otras entradas, podrían verse afectadas. Revisa manualmente `/etc/hosts` si dudas.
-
----
-
-## Ejemplo rápido
-
-1. `python3 setup_htb.py`
-2. Input:
-
-```
-Introduce la IP de la máquina de HTB: 10.10.10.5
-Introduce un nombre para la máquina (ej: maquina.htb): merda.htb
-```
-
-3. Verás confirmaciones:
-
-```
-✓ Entrada añadida a /etc/hosts
-✓ Configuración completada. Carpeta creada en /home/USSE/HTB_maquina
-Iniciando conexión VPN...
-```
-
-4. Cuando quieras terminar: `Ctrl+C` → limpieza automática.
-
----
+     * Stop the VPN.
+     * Remove the entry added to `/etc/hosts`.
