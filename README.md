@@ -4,6 +4,7 @@
   <img width="635" height="332" alt="image" src="https://github.com/user-attachments/assets/7ac52615-e6ec-4761-b3e1-cb502f01540f" />
 </div>
 
+
 A small Python script to automate the setup of a lab machine (e.g., HackTheBox).
 It creates a folder structure, adds the entry to `/etc/hosts`, and launches a VPN. Pressing `Ctrl+C` removes the added entry from `/etc/hosts`.
 
