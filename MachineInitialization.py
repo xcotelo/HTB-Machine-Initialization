@@ -47,7 +47,7 @@ usuario = os.getenv("SUDO_USER") or getpass.getuser()
 ruta_base = (f"/home/{usuario}/HTB_{nombre_carpeta}")
 
 if os.path.exists(ruta_base):
-	print("The directory {ruta_base} already exists.)
+	print("The directory {ruta_base} already exists.")
 else:
 	subcarpetas = ["nmap", "exploit", "varios"]
 	os.makedirs(ruta_base, exist_ok=True)
