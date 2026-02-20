@@ -1,7 +1,7 @@
 # HTB Machine Initialization
 
 <div align="center">
-  <img width="635" height="332" alt="image" src="https://github.com/user-attachments/assets/7ac52615-e6ec-4761-b3e1-cb502f01540f" />
+  <img width="623" height="329" alt="image" src="https://github.com/user-attachments/assets/77107ed3-05a2-472d-b87b-597abaf307ba" />
 </div>
 
 
