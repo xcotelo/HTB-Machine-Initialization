@@ -21,7 +21,7 @@ What it does automatically:
 
 * Creates `/home/USER/HTB_<name_without_.htb>` with subfolders `nmap`, `exploit`, and `various`.
 * Adds the line `IP name` to `/etc/hosts`.
-* Runs `sudo openvpn HTBfile.ovpn`.
+* Runs `sudo openvpn <file>.ovpn`.
 * If you press `Ctrl+C`:
 
      * Stop the VPN.
