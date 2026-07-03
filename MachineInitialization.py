@@ -61,11 +61,18 @@ def detectar_dominio(target_ip):
         print("\033[1;33m✗ Timeout detecting domain\033[0m\n")
         return None
     except FileNotFoundError:
-        print("\033[1;33m⚠ whatweb is not installed. Install it with: sudo apt install whatweb\033[0m\n")
-        return None
+        print("\033[1;33m⚠ whatweb is not installed. Installing...\033[0m\n")
+        try:
+            subprocess.run(["sudo", "apt", "update", "-qq"], check=True)
+            subprocess.run(["sudo", "apt", "install", "whatweb", "-y", "-qq"], check=True)
+            print("\033[1;32m✓ whatweb installed successfully\033[0m\n")
+            return detectar_dominio(target_ip)
+        except Exception as e:
+            print(f"\033[1;31m✗ Failed to install whatweb: {e}\033[0m\n")
+            return None
     except Exception:
         return None
-
+    
 def limpiar_hosts():
     try:
         if ip:
