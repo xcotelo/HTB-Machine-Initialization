@@ -167,9 +167,11 @@ def main():
 
     try:
         subprocess.run(["python", "-m", "venv" , f"{ruta_base}/.venv"], check=True)
+        subprocess.run(["chown", "-R", f"{usuario}:{usuario}", f"{ruta_base}/.venv"], check=True)
+
         print(f"\n\033[1;32m✓ Virtual environment created at {ruta_base}\033[0m\n")
-    except:
-        print("\033[1;33m⚠ Virtual environment already exists.\033[0m\n")
+    except subprocess.CalledProcessError as e:
+        print(f"\033[1;33m⚠ Virtual environment error. Check permissions or maybe the .venv already exists: {e}\033[0m\n")
 
     print("\n\033[1;32m✓ All setup steps completed. VPN is running in background.\033[0m")
     print("\033[1;33m⚠ Press Ctrl+C to stop the VPN and clean /etc/hosts.\033[0m")
